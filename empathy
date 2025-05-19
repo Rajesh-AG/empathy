@@ -1,0 +1,33 @@
+!pip install gradio transformers
+import gradio as gr
+from transformers import pipeline
+
+# Load a lightweight emotion detection model
+emotion_model = pipeline("text-classification", model="j-hartmann/emotion-english-distilroberta-base")
+
+# Function to analyze empathy level and respond
+def chatbot_response(user_input, history):
+    result = emotion_model(user_input)
+    detected_emotion = result[0]['label'].lower()  # ensure lowercase for matching
+
+    response_map = {
+        "joy": "I'm glad to hear that! 😊",
+        "sadness": "I'm here for you. Feel free to share more. 💙",
+        "anger": "I understand you're upset. Take a deep breath. 😌",
+        "fear": "That sounds scary. I'm here to listen. 💜",
+        "love": "That's wonderful! Tell me more. ❤️",
+        "surprise": "Oh! That must have been unexpected. 🤔",
+        "confusion": "It's okay to be confused. Let's figure it out together. 🤝",
+        "disgust": "That's really unpleasant. Want to talk about it? 😣",
+        "boredom": "Let’s find something interesting to do! 🎲"
+    }
+
+    response = response_map.get(detected_emotion, "I'm here for you. Tell me more.")
+
+    return f"**Detected Emotion:** {detected_emotion.capitalize()}\n\n**Chatbot:** {response}"
+
+# Gradio UI
+demo = gr.Interface(fn=chatbot_response, inputs="text", outputs="text", title="🤖 Lightweight Empathy AI Bot")
+
+# Launch the app
+demo.launch(share=True)
